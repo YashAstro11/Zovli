@@ -4,6 +4,8 @@ import {
     Text,
     View,
     TextInput,
+    StatusBar,
+    Platform,
     TouchableOpacity,
     FlatList,
     ActivityIndicator,
@@ -11,8 +13,13 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import MovieCard from "../components/MovieCard";
 import { searchMovies } from "../services/movieApi";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 export default function SearchScreen() {
+    const insets = useSafeAreaInsets();
+    const topSpacing = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0) + 16;
+
     const [searchQuery, setSearchQuery] = useState("");
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -74,7 +81,7 @@ export default function SearchScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: topSpacing }]}>
             {/* Search Input Bar */}
             <View style={styles.searchBar}>
                 <Ionicons name="search" size={20} color="#64748b" style={styles.searchIcon} />
@@ -150,13 +157,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#0f172a",
-        paddingTop: 44,
     },
     searchBar: {
         flexDirection: "row",
         alignItems: "center",
         backgroundColor: "#1e293b",
         marginHorizontal: 16,
+        marginTop: 12,
         borderRadius: 12,
         paddingHorizontal: 12,
         height: 50,

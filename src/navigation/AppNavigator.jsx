@@ -3,6 +3,7 @@ import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
@@ -24,6 +25,7 @@ const appTheme = {
 
 // 1. Bottom Tabs Component
 function BottomTabs() {
+    const insets = useSafeAreaInsets(); // phone ke bottom safe area ko read karega
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -32,8 +34,8 @@ function BottomTabs() {
                 tabBarStyle: {
                     backgroundColor: '#0f172a',
                     borderTopColor: '#1e293b',
-                    height: 60,
-                    paddingBottom: 8,
+                    height: 60 + (insets.bottom > 0 ? insets.bottom : 12),
+                    paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
                     paddingTop: 8,
                 },
                 tabBarActiveTintColor: '#38bdf8',

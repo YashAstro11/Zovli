@@ -4,13 +4,20 @@ import {
     Text,
     View,
     FlatList,
+    Platform,
+    StatusBar,
     ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MovieCard from '../components/MovieCard';
 import { useFavourites } from '../context/FavouritesContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 export default function FavouritesScreen() {
+    const insets = useSafeAreaInsets();
+    const topSpacing = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0) + 16;
+
     const { favourites, loadingFavourites } = useFavourites();
 
     // 1. Loading Storage State
@@ -37,7 +44,7 @@ export default function FavouritesScreen() {
 
     // 3. Saved Favourites List
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: topSpacing }]}>
             <View style={styles.header}>
                 <View style={styles.headerTitleRow}>
                     <Ionicons name="bookmark" size={22} color="#38bdf8" style={{ marginRight: 8 }} />
@@ -63,7 +70,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#0f172a',
-        paddingTop: 44,
     },
     center: {
         flex: 1,
@@ -89,6 +95,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginHorizontal: 16,
+        marginTop: 12,
         marginBottom: 12,
     },
     headerTitleRow: {

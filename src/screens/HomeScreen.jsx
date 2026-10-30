@@ -5,13 +5,19 @@ import {
     View,
     FlatList,
     ActivityIndicator,
+    Platform,
+    StatusBar,
     TouchableOpacity
 } from "react-native";
 import MovieCard from "../components/MovieCard";
 import { getPopularMovies } from "../services/movieApi";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 export default function HomeScreen() {
+    const insets = useSafeAreaInsets();
+    const topSpacing = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0) + 16;
     const isFetchingRef = useRef(false);
     const [page, setPage] = useState(1);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -120,7 +126,7 @@ export default function HomeScreen() {
 
     // 3. Success State: Movies FlatList
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: topSpacing }]}>
             <View style={styles.headerRow}>
                 <Ionicons name="flame" size={22} color="#38bdf8" style={{ marginRight: 8 }} />
                 <Text style={styles.heading}>Trending Movies</Text>
@@ -152,7 +158,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#0f172a',
-        paddingTop: 44,
     },
     center: {
         justifyContent: 'center',
