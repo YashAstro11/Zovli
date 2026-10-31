@@ -1,7 +1,7 @@
 ﻿{
     "expo":  {
                  "name":  "Zovli",
-                 "slug":  "zovli",
+                 "slug":  "Movie_Explorer_App",
                  "version":  "1.0.0",
                  "orientation":  "portrait",
                  "icon":  "./assets/icon.png",
