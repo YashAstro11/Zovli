@@ -7,49 +7,51 @@ import {
     ScrollView,
     ActivityIndicator,
     TouchableOpacity,
+    Linking, //Justwatch link open karne ke liye 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getMovieDetails, IMAGE_BASE_URL } from '../services/movieApi';
+import { getMovieDetails, getWatchProviders, IMAGE_BASE_URL } from '../services/movieApi';
 import { useFavourites } from '../context/FavouritesContext';
 
 export default function MovieDetailsScreen({ route }) {
     const { isFavourite, toggleFavourite } = useFavourites();
-    // Navigation se initial movie data milta hai
     const { movie: initialMovie } = route.params || {};
-
     const [details, setDetails] = useState(null);
+    const [providers, setProviders] = useState(null);
     const [loading, setLoading] = useState(true);
-
-    // Runtime ko "2h 25m" format mein badalne ka helper
+    const [loadingProviders, setLoadingProviders] = useState(true);
     const formatRuntime = (minutes) => {
         if (!minutes) return 'N/A';
         const hrs = Math.floor(minutes / 60);
         const mins = minutes % 60;
         return `${hrs}h ${mins}m`;
     };
-
     useEffect(() => {
         let isMounted = true;
-
-        async function fetchFullDetails() {
+        async function fetchAllData() {
             if (!initialMovie?.id) return;
             try {
                 setLoading(true);
-                const data = await getMovieDetails(initialMovie.id);
+                setLoadingProviders(true);
+                // Dono APIs parallel chalengi
+                const [detailsData, providersData] = await Promise.all([
+                    getMovieDetails(initialMovie.id).catch(() => null),
+                    getWatchProviders(initialMovie.id).catch(() => null),
+                ]);
                 if (isMounted) {
-                    setDetails(data);
+                    if (detailsData) setDetails(detailsData);
+                    if (providersData) setProviders(providersData);
                 }
             } catch (err) {
-                console.log('Could not load full details:', err.message);
+                console.log('Details fetch error:', err.message);
             } finally {
                 if (isMounted) {
                     setLoading(false);
+                    setLoadingProviders(false);
                 }
             }
         }
-
-        fetchFullDetails();
-
+        fetchAllData();
         return () => {
             isMounted = false;
         };
@@ -136,7 +138,78 @@ export default function MovieDetailsScreen({ route }) {
                     </View>
                 )}
 
-                {/* 4. Overview Section */}
+                {/* 4. Where to Watch in India (OTT Streaming Section) */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeaderRow}>
+                        <Ionicons name="tv-outline" size={18} color="#38bdf8" style={{ marginRight: 6 }} />
+                        <Text style={styles.sectionTitle}>Where to Watch in India</Text>
+                    </View>
+                    {loadingProviders ? (
+                        <View style={styles.providerLoadingBox}>
+                            <ActivityIndicator size="small" color="#38bdf8" />
+                            <Text style={styles.providerLoadingText}>Checking OTT availability...</Text>
+                        </View>
+                    ) : providers?.stream && providers.stream.length > 0 ? (
+                        <View>
+                            <Text style={styles.providerSubText}>Included with Subscription</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.providerRow}>
+                                {providers.stream.map((p) => (
+                                    <TouchableOpacity
+                                        key={p.provider_id}
+                                        style={styles.providerCard}
+                                        onPress={() => providers.link && Linking.openURL(providers.link)}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Image
+                                            source={{ uri: `${IMAGE_BASE_URL}${p.logo_path}` }}
+                                            style={styles.providerLogo}
+                                        />
+                                        <Text style={styles.providerName} numberOfLines={1}>
+                                            {p.provider_name}
+                                        </Text>
+                                        <View style={styles.streamTag}>
+                                            <Text style={styles.streamTagText}>Stream</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    ) : providers?.rent && providers.rent.length > 0 ? (
+                        <View>
+                            <Text style={styles.providerSubText}>Available to Rent / Buy</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.providerRow}>
+                                {providers.rent.map((p) => (
+                                    <TouchableOpacity
+                                        key={p.provider_id}
+                                        style={styles.providerCard}
+                                        onPress={() => providers.link && Linking.openURL(providers.link)}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Image
+                                            source={{ uri: `${IMAGE_BASE_URL}${p.logo_path}` }}
+                                            style={styles.providerLogo}
+                                        />
+                                        <Text style={styles.providerName} numberOfLines={1}>
+                                            {p.provider_name}
+                                        </Text>
+                                        <View style={styles.rentTag}>
+                                            <Text style={styles.rentTagText}>Rent</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    ) : (
+                        <View style={styles.emptyProviderCard}>
+                            <Ionicons name="information-circle-outline" size={20} color="#64748b" style={{ marginRight: 8 }} />
+                            <Text style={styles.emptyProviderText}>
+                                Currently not streaming on Indian OTT platforms.
+                            </Text>
+                        </View>
+                    )}
+                </View>
+
+                {/* 5. Overview Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Storyline</Text>
                     <Text style={styles.overviewText}>
@@ -271,4 +344,96 @@ const styles = StyleSheet.create({
         backgroundColor: '#ef444420', // subtle transparent red background
         borderColor: '#ef444450',
     },
+    sectionHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    providerLoadingBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1e293b',
+        padding: 12,
+        borderRadius: 10,
+    },
+    providerLoadingText: {
+        color: '#94a3b8',
+        fontSize: 13,
+        marginLeft: 10,
+    },
+    providerSubText: {
+        color: '#64748b',
+        fontSize: 11,
+        marginBottom: 8,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    providerRow: {
+        flexDirection: 'row',
+        marginBottom: 8,
+    },
+    providerCard: {
+        alignItems: 'center',
+        backgroundColor: '#1e293b',
+        padding: 10,
+        borderRadius: 12,
+        marginRight: 12,
+        width: 85,
+        borderWidth: 1,
+        borderColor: '#334155',
+    },
+    providerLogo: {
+        width: 44,
+        height: 44,
+        borderRadius: 10,
+        marginBottom: 6,
+    },
+    providerName: {
+        color: '#ffffff',
+        fontSize: 10,
+        fontWeight: '600',
+        textAlign: 'center',
+        marginBottom: 4,
+    },
+    streamTag: {
+        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(34, 197, 94, 0.4)',
+    },
+    streamTagText: {
+        color: '#4ade80',
+        fontSize: 9,
+        fontWeight: 'bold',
+    },
+    rentTag: {
+        backgroundColor: 'rgba(234, 179, 8, 0.2)',
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(234, 179, 8, 0.4)',
+    },
+    rentTagText: {
+        color: '#facc15',
+        fontSize: 9,
+        fontWeight: 'bold',
+    },
+    emptyProviderCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1e293b',
+        padding: 12,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#334155',
+    },
+    emptyProviderText: {
+        color: '#94a3b8',
+        fontSize: 13,
+        flex: 1,
+    },
+
 });

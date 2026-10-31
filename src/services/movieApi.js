@@ -72,3 +72,37 @@ export async function getMovieDetails(movieId) {
         throw error;
     }
 }
+
+// movie india me kaha stream ho rahi hai 
+export async function getWatchProviders(movieId) {
+    if (!movieId) return null;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+        const url = `${BASE_URL}/movie/${movieId}/watch/providers?api_key=${API_KEY}`;
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            return { stream: [], rent: [], buy: [], link: null };
+        }
+
+        const data = await response.json();
+        // india region prefer karne ke liye 
+        const countryData = data.results?.IN || data.results?.US || null;
+        if (!countryData) {
+            return { stream: [], rent: [], buy: [], link: null };
+        }
+
+        return {
+            stream: countryData.flatrate || [], // streaming services ka array
+            rent: countryData.rent || [], // rent services
+            buy: countryData.buy || [], // buy services
+            link: countryData.link || null, //deeplink
+        };
+    } catch (error) {
+        console.error('getWatchProviders Error:', error.message);
+        return { stream: [], rent: [], buy: [], link: null };
+    }
+}

@@ -1,33 +1,42 @@
-{
-  "expo": {
-    "name": "Movie_Explorer_App",
-    "slug": "Movie_Explorer_App",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "package": "com.nerdymerdock.Movie_Explorer_App"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "a6a10b05-00ea-498f-9f6e-14ad976bc6ab"
-      }
-    },
-    "plugins": [
-      "expo-font"
-    ]
-  }
+﻿{
+    "expo":  {
+                 "name":  "Zovli",
+                 "slug":  "zovli",
+                 "version":  "1.0.0",
+                 "orientation":  "portrait",
+                 "icon":  "./assets/icon.png",
+                 "userInterfaceStyle":  "dark",
+                 "ios":  {
+                             "supportsTablet":  true
+                         },
+                 "android":  {
+                                 "adaptiveIcon":  {
+                                                      "backgroundColor":  "#0f172a",
+                                                      "foregroundImage":  "./assets/android-icon-foreground.png",
+                                                      "backgroundImage":  "./assets/android-icon-background.png",
+                                                      "monochromeImage":  "./assets/android-icon-monochrome.png"
+                                                  },
+                                 "package":  "com.nerdymerdock.Movie_Explorer_App"
+                             },
+                 "web":  {
+                             "favicon":  "./assets/favicon.png"
+                         },
+                 "extra":  {
+                               "eas":  {
+                                           "projectId":  "a6a10b05-00ea-498f-9f6e-14ad976bc6ab"
+                                       }
+                           },
+                 "plugins":  [
+                                 "expo-font",
+                                 [
+                                     "expo-splash-screen",
+                                     {
+                                         "image":  "./assets/splash-icon.png",
+                                         "imageWidth":  200,
+                                         "resizeMode":  "contain",
+                                         "backgroundColor":  "#0f172a"
+                                     }
+                                 ]
+                             ]
+             }
 }
